@@ -1,7 +1,7 @@
 %    byrne-euclid 0.2.5
 %    MetaPost library that implements most of the graphical
 %    features present in Oliver Byrne's version of Euclid's "Elements"
-%    Copyright 2025 Sergey Slyusarev
+%    Copyright 2024 Sergey Slyusarev
 %
 %    This program is free software: you can redistribute it and/or modify
 %    it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ magnitudeScale := 1;
 magnitudeGap := 3/2lineWidth;
 markLength := 3lineWidth;
 rayExtension := 1/3cm;
-textLabelScaleFactor := 2/5;
+textLabelScaleFactor := 1;
 
 %
 % Some symbolic constants for better readability
@@ -143,13 +143,14 @@ save outputString, endpoint, i;
     outputString
 enddef;
 
-color byred, byblue, byyellow, byblack, bygrey,
+color byred, byblue, byyellow, bygreen, byblack, bygrey,
     byredN, byblueN, byyellowN, byblackN, bygreyN,
     outlineColor.byredN, outlineColor.byblueN, outlineColor.byyellowN, outlineColor.byblackN, outlineColor.bygreyN,
     bytransparent, byDefaultAngleOptionalColor;
 byred := (.85, .3, .1);
 byblue := (.15, .35, .6);
 byyellow := (.95, .7, 0.1);
+bygreen  := (0.122, 0.529, 0.122);
 byblack := black;
 bygrey := (.8, .8, .8);
 byredN := white;
@@ -1303,39 +1304,27 @@ vardef byNamedMarkLine(suffix lineName) =
     p rotated globalRotation
 enddef;
 
-vardef byFindLinePointedThere (expr a, b, checkForLength) =
-    save endA, endB, endAC, endBC, endAA, endBA, chosenLine, lL, useLine;
+vardef byFindLinePointedThere (expr a, b) =
+    save endA, endB, endAC, endBC, endAA, endBA, chosenLine, lL;
     string chosenLine;
     pair endA, endB, endAC, endBC, endAA, endBA;
     numeric lL;
-    boolean useLine;
     endA := scantokens(a);
     endB := b;
     if known pointLinesList.scantokens(a):
         forsuffixes lL=scantokens(pointLinesList.scantokens(a)):
-			endAC := scantokens(getAttribute("line", "EndAName", str lL));
-			endBC := scantokens(getAttribute("line", "EndBName", str lL));
-			if (endAC = endA):
-				endAA := endAC;
-				endBA := endBC;
-			elseif (endBC = endA):
-				endAA := endBC;
-				endBA := endAC;
-			fi;
-			if (endB <> endA):
-				if ((abs(angle(endBA - endAA) - angle(endB - endA)) mod 360) < 1):
-					useLine := true;
-					if checkForLength:
-						useLine := false;
-						if abs(endBA - endAA) <= abs(endB - endA):
-							useLine := true;
-						fi;
-					fi;
-					if useLine:
-						chosenLine := str lL;
-					fi;
-				fi;
-			fi;
+            endAC := scantokens(getAttribute("line", "EndAName", str lL));
+            endBC := scantokens(getAttribute("line", "EndBName", str lL));
+            if (endAC = endA):
+                endAA := endAC;
+                endBA := endBC;
+            elseif (endBC = endA):
+                endAA := endBC;
+                endBA := endAC;
+            fi;
+            if ((abs(angle(endBA - endAA) - angle(endB - endA)) mod 360) < 1):
+                chosenLine := str lL;
+            fi;
         endfor;
     fi;
     if unknown chosenLine:
@@ -1374,7 +1363,7 @@ vardef byConstructCompoundLine (expr lineName) =
     i := 0;
     forever:
         i := i + 1;
-        newLine := byFindLinePointedThere(lineStart, scantokens(lEnd), true);
+        newLine := byFindLinePointedThere(lineStart, scantokens(lEnd));
         if (newLine = ""):
             errmessage("There's no line from " & lineStart & " to " & lEnd);
         fi;
@@ -1528,8 +1517,8 @@ vardef byNamedCompoundLineRender (expr cu, pw, sty)(text linesList) =
             fi;
             j := j + 1;
         endfor;
-        extensionNames0 := byFindLinePointedThere(endNames1, 2[scantokens(endNames0), scantokens(endNames1)], false);
-        extensionNames1 := byFindLinePointedThere(endNames0, 2[scantokens(endNames1), scantokens(endNames0)], false);
+        extensionNames0 := byFindLinePointedThere(endNames1, 2[scantokens(endNames0), scantokens(endNames1)]);
+        extensionNames1 := byFindLinePointedThere(endNames0, 2[scantokens(endNames1), scantokens(endNames0)]);
         if extensionNames0 = "":
             extensionNames0 := "dummyLine";
         else:
@@ -4028,7 +4017,7 @@ if known metafunversion:
     enddef;
 else:
     input TEX;
-    TEXPRE("%&latex" & char(10) & "\documentclass{article}\usepackage[utf8]{inputenc}\usepackage[russian]{babel}\def\pointlabel#1{\textup{\textsf{#1}}}\begin{document}");
+    TEXPRE("%&latex" & char(10) & "\documentclass{article}\usepackage[utf8]{inputenc}\usepackage[russian]{babel}\def\pointlabel#1{\textsf{#1}}\begin{document}");
     TEXPOST("\end{document}");
     vardef textLabelRender(expr t) =
         TEX("\pointlabel{" & t & "}") scaled textLabelScaleFactor

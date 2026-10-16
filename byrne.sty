@@ -1,5 +1,5 @@
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{byrne}[2025/12/05 Byrne]
+\ProvidesPackage{byrne}[2024/09/16 Byrne]
 
 \RequirePackage{xparse}
 \RequirePackage{ifmtarg}
@@ -16,7 +16,7 @@
 \def\mpPost{}
 
 % point label style
-\def\pointlabel#1{\textup{\textsf{#1}}}
+\def\pointlabel#1{\textsf{#1}}
 
 \newif\ifCreateNewInstanceForPicture
 \CreateNewInstanceForPicturetrue
@@ -81,17 +81,6 @@ end
 	\end{mplibcode}%
 	}%
 }
-
-\DeclareDocumentCommand{\defineNewPictureBasedOnOld}{o o m}{%
-	\CreateNewInstanceForPicturefalse
-	\IfNoValueTF{#2}%
-		{\defineNewPicture[#1][#2]{#3}}%
-		{\IfNoValueTF{#1}%
-			{\defineNewPicture[#1]{#3}}%
-			{\defineNewPicture{#3}}%
-		}%
-	\CreateNewInstanceForPicturetrue
-	}
 
 \def\drawImageFromCurrentInstance#1{
 	\begin{mplibcode}[\currentInstance]%
